@@ -27,7 +27,7 @@ class db_link():
     return self._connected
 
 
-  def read_user_information(self, username):
+  def get_user_info(self, username):
     '''SELECT username,
        smtplogin.username IS NULL AS unseen,
        smtplogin.locked,
@@ -37,23 +37,23 @@ class db_link():
        smtplogin.dynlimit,
        smtplogin.lastseen
   FROM auth LEFT OUTER JOIN smtplogin USING (username, source) WHERE username='$username'");'''
-    pass
+    return { 'username': username }
 
   def create_user(self, username):
     '''INSERT INTO smtplogin (username, source, password, authcount, lastseen) SELECT username, source, password, 1, NOW() FROM auth WHERE username = '$username' '''
-    pass
+    return True
+
+  def increment_user(self, username):
+    '''UPDATE smtplogin SET authcount = authcount + 1, lastseen = NOW() WHERE username='$username' '''
+    return True
+
+  def increment_lock_user(self, username):
+    '''UPDATE smtplogin SET authcount = authcount + 1, lastseen = NOW(), locked = 'Y' WHERE username='$username' '''
+    return True
 
   def unlock_user(self, username):
     '''UPDATE smtplogin SET locked = 'N', dynlimit = $newlimit, password = (SELECT password FROM auth WHERE username='$username') WHERE username='$username' '''
-    pass
-
-  def increment_user_counter(self, username):
-    '''UPDATE smtplogin SET authcount = authcount + 1, lastseen = NOW() WHERE username='$username' '''
-    pass
-
-  def lock_user(self, username):
-    '''UPDATE smtplogin SET authcount = authcount + 1, lastseen = NOW(), locked = 'Y' WHERE username='$username' '''
-    pass
+    return True
 
 
   def _set_parameter(self, option, opt, value, parser):

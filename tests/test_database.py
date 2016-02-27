@@ -38,4 +38,42 @@ def test_parse_command_line_options(mocksql):
   assert kwargs['passwd'] == mock.sentinel.password
   assert kwargs['db'] == mock.sentinel.database
 
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_retrieve_user_information(mocksql):
+  sql = db_link()
+  sql.connect()
 
+  user_info = sql.get_user_info(mock.sentinel.user)
+  assert user_info['username'] == mock.sentinel.user
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_create_user(mocksql):
+  sql = db_link()
+  sql.connect()
+
+  retval = sql.create_user(mock.sentinel.user)
+  assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_increment_user_counter(mocksql):
+  sql = db_link()
+  sql.connect()
+
+  retval = sql.increment_user(mock.sentinel.user)
+  assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_increment_user_counter_and_lock(mocksql):
+  sql = db_link()
+  sql.connect()
+
+  retval = sql.increment_lock_user(mock.sentinel.user)
+  assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_unlock_user(mocksql):
+  sql = db_link()
+  sql.connect()
+
+  retval = sql.unlock_user(mock.sentinel.user)
+  assert retval
