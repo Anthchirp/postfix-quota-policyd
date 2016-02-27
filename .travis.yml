@@ -1,5 +1,8 @@
 language: python
 install:
     - pip install pytest pytest-cov
+    - pip install coveralls
 script:
     - py.test --cov=quotapolicyd
+after_success:
+    - coveralls
