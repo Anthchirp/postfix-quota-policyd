@@ -1,7 +1,6 @@
 language: python
 install:
-    - pip install pytest pytest-cov
-    - pip install coveralls
+    - pip install pytest pytest-cov mock coveralls mysqlclient
 script:
     - py.test --cov=quotapolicyd
 after_success:

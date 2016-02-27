@@ -5,5 +5,5 @@ setup(
   author="M Gerstel",
   version="0.1",
   packages=find_packages(),
-  install_requires=['MySQLdb'],
+  install_requires=['mysqlclient'],
 )
