@@ -1,4 +1,4 @@
-from database import connection as sql
+from database import db_link
 from optparse import OptionParser, SUPPRESS_HELP
 import sys
 
@@ -7,6 +7,7 @@ parser = OptionParser()
 #                  help="be moderately verbose")
 parser.add_option("-?", help=SUPPRESS_HELP, action="help")
 
+sql = db_link()
 sql.add_command_line_options(parser)
 
 opts, args = parser.parse_args()

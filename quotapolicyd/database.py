@@ -3,11 +3,15 @@ import MySQLdb
 class db_link():
   def __init__(self):
     # Set some sensible defaults
-    self._db_host = '127.0.0.1'
-    self._db_port = '3306'
-    self._db_user = 'quotapolicyd'
-    self._db_pass = 'quotapolicyd'
-    self._db_db   = 'quotapolicyd'
+    self.defaults = {
+      '--db-host': '127.0.0.1',
+      '--db-port': '3306',
+      '--db-user': 'quotapolicyd',
+      '--db-pass': 'quotapolicyd',
+      '--db-name': 'quotapolicyd'
+    }
+    # Effective configuration
+    self.config = {}
 
     self._connected = False
     self._db = None
@@ -15,12 +19,13 @@ class db_link():
   def connect(self):
     if self._connected: return
     self._db = MySQLdb.connect(
-      host = self._db_host,
-      port = self._db_port,
-      user = self._db_user,
-      passwd = self._db_pass,
-      db = self._db_db
-      )
+      host = self.config.get('--db-host', self.defaults.get('--db-host', None)),
+      port = self.config.get('--db-port', self.defaults.get('--db-port', None)),
+      user = self.config.get('--db-user', self.defaults.get('--db-user', None)),
+      passwd = self.config.get('--db-pass', self.defaults.get('--db-pass', None)),
+      db = self.config.get('--db-name', self.defaults.get('--db-name', None)),
+      read_default_file = self.config.get('--db-conf', self.defaults.get('--db-conf', None))
+    )
     self._connected = True
 
   def is_connected(self):
@@ -58,41 +63,39 @@ class db_link():
 
   def _set_parameter(self, option, opt, value, parser):
     '''callback function for optionparser'''
-    if opt == '--db-host':
-      self._db_host = value
-    elif opt == '--db-port':
-      self._db_port = value
-    elif opt == '--db-user':
-      self._db_user = value
-    elif opt == '--db-pass':
-      self._db_pass = value
-    elif opt == '--db-name':
-      self._db_db = value
+    self.config[opt] = value
+    if opt == '--db-conf':
+      self.defaults = {}
 
   def add_command_line_options(self, optparser):
     '''function to inject command line parameters'''
     optparser.add_option('--db-host', metavar='HOST',
-      default=self._db_host,
+      default=self.defaults.get('--db-host', None),
       help='MySQL host address, default %default',
-      type='string', nargs=1, dest='db-host',
+      type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-port', metavar='PORT',
-      default=self._db_port,
+      default=self.defaults.get('--db-port', None),
       help='MySQL host port, default %default',
-      type='string', nargs=1, dest='db-port',
+      type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-user', metavar='USER',
-      default=self._db_user,
+      default=self.defaults.get('--db-user', None),
       help='MySQL user, default %default',
-      type='string', nargs=1, dest='db-user',
+      type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-pass', metavar='PASS',
-      default=self._db_pass,
+      default=self.defaults.get('--db-pass', None),
       help='MySQL password, default %default',
-      type='string', nargs=1, dest='db-pass',
+      type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-name', metavar='DB',
-      default=self._db_db,
+      default=self.defaults.get('--db-name', None),
       help='MySQL database name, default %default',
-      type='string', nargs=1, dest='db-db',
+      type='string', nargs=1,
+      action='callback', callback=self._set_parameter)
+    optparser.add_option('--db-conf', metavar='CNF',
+      default=self.defaults.get('--db-conf', None),
+      help='MySQL configuration file containing connection information, disables MySQL default values',
+      type='string', nargs=1,
       action='callback', callback=self._set_parameter)

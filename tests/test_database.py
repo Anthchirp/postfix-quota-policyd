@@ -39,6 +39,25 @@ def test_parse_command_line_options(mocksql):
   assert kwargs['db'] == mock.sentinel.database
 
 @mock.patch('quotapolicyd.database.MySQLdb')
+def test_check_config_file_behaviour(mocksql):
+  parser = optparse.OptionParser()
+
+  sql = db_link()
+  sql.add_command_line_options(parser)
+  parser.parse_args([
+    '--db-conf', mock.sentinel.config,
+    '--db-user', mock.sentinel.user])
+
+  sql.connect()
+
+  assert mocksql.connect.called == 1
+  args, kwargs = mocksql.connect.call_args
+  assert kwargs['read_default_file'] == mock.sentinel.config
+  assert kwargs['user'] == mock.sentinel.user
+  for undefined in ['host', 'port', 'passwd', 'db']:
+    assert (undefined not in kwargs) or (kwargs[undefined] is None)
+
+@mock.patch('quotapolicyd.database.MySQLdb')
 def test_retrieve_user_information(mocksql):
   sql = db_link()
   sql.connect()
