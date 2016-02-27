@@ -5,13 +5,18 @@ from quotapolicyd.database import db_link
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_instantiate_link_and_connect_to_database(mocksql):
+  mocksql.connect.return_value = mock.sentinel.dblink
   sql = db_link()
+  assert not sql.is_connected()
+
   sql.connect()
+
   assert mocksql.connect.called == 1
+  assert sql._db == mock.sentinel.dblink
+  assert sql.is_connected()
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_parse_command_line_options(mocksql):
-  mocksql.connect.return_value = mock.sentinel.dblink
   parser = optparse.OptionParser()
 
   sql = db_link()
@@ -23,7 +28,6 @@ def test_parse_command_line_options(mocksql):
     '--db-pass', mock.sentinel.password,
     '--db-name', mock.sentinel.database])
 
-  assert not sql.is_connected()
   sql.connect()
 
   assert mocksql.connect.called == 1
@@ -33,5 +37,5 @@ def test_parse_command_line_options(mocksql):
   assert kwargs['user'] == mock.sentinel.user
   assert kwargs['passwd'] == mock.sentinel.password
   assert kwargs['db'] == mock.sentinel.database
-  assert sql._db == mock.sentinel.dblink
-  assert sql.is_connected()
+
+
