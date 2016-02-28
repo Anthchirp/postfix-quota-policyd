@@ -11,7 +11,7 @@ def test_instantiate_link_and_connect_to_database(mocksql):
 
   sql.connect()
 
-  assert mocksql.connect.called == 1
+  assert mocksql.connect.call_count == 1
   assert sql._db == mock.sentinel.dblink
   assert sql.is_connected()
 
@@ -30,13 +30,24 @@ def test_parse_command_line_options(mocksql):
 
   sql.connect()
 
-  assert mocksql.connect.called == 1
+  assert mocksql.connect.call_count == 1
   args, kwargs = mocksql.connect.call_args
   assert kwargs['host'] == mock.sentinel.host
   assert kwargs['port'] == 1234
   assert kwargs['user'] == mock.sentinel.user
   assert kwargs['passwd'] == mock.sentinel.password
   assert kwargs['db'] == mock.sentinel.database
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_add_command_line_help(mocksql):
+  parser = mock.MagicMock()
+
+  db_link().add_command_line_options(parser)
+
+  assert parser.add_option.called
+  assert parser.add_option.call_count > 4
+  for call in parser.add_option.call_args_list:
+    assert call[1]['action'] == 'callback'
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_check_config_file_behaviour(mocksql):
@@ -50,7 +61,7 @@ def test_check_config_file_behaviour(mocksql):
 
   sql.connect()
 
-  assert mocksql.connect.called == 1
+  assert mocksql.connect.call_count == 1
   args, kwargs = mocksql.connect.call_args
   assert kwargs['read_default_file'] == mock.sentinel.config
   assert kwargs['user'] == mock.sentinel.user
@@ -59,19 +70,21 @@ def test_check_config_file_behaviour(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_retrieve_user_information(mocksql):
-  mocksql.connect().cursor().fetchone.return_value = mock.sentinel.dbresults
+  mocksql.connect.return_value. \
+    cursor.return_value. \
+    fetchone.return_value = mock.sentinel.dbresults
 
   sql = db_link()
   user_info = sql.get_user_info(mock.sentinel.user)
 
-  assert mocksql.connect.called == 1
+  assert mocksql.connect.call_count == 1
   assert sql.is_connected()
 
-  assert mocksql.connect().cursor().execute.called == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
   args, kwargs = mocksql.connect().cursor().execute.call_args
   assert args[1] == (mock.sentinel.user,)
   assert args[0].startswith("SELECT")
-  assert mocksql.connect().cursor().close.called == 1
+  assert mocksql.connect().cursor().close.call_count == 1
   assert user_info == mock.sentinel.dbresults 
 
 @mock.patch('quotapolicyd.database.MySQLdb')

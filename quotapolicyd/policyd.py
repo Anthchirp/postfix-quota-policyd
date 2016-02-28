@@ -1,14 +1,19 @@
-from database import db_link
+import database
 from optparse import OptionParser, SUPPRESS_HELP
 import sys
 
-parser = OptionParser()
-#parser.add_option("-v", action="store_true", dest="verbose",
-#                  help="be moderately verbose")
-parser.add_option("-?", help=SUPPRESS_HELP, action="help")
+class policyd():
+  def __init__(self):
+    self.sql = database.db_link()
 
-sql = db_link()
-sql.add_command_line_options(parser)
+  def run(self):
+    parser = OptionParser()
+    #parser.add_option("-v", action="store_true", dest="verbose",
+    #                  help="be moderately verbose")
+    parser.add_option("-?", help=SUPPRESS_HELP, action="help")
 
-opts, args = parser.parse_args()
+    self.sql.add_command_line_options(parser)
+    opts, args = parser.parse_args()
 
+if __name__ == "__main__":
+  policyd().run()
