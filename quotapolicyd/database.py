@@ -25,7 +25,6 @@ class db_link():
     with self._lock:
       if self._connected: return
       kwargs = { 'cursorclass': MySQLdb.cursors.DictCursor }
-      kwargs = {}
       for kw, val in [('host', '--db-host'),
                       ('port', '--db-port'),
                       ('user', '--db-user'),
