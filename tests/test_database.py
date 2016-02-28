@@ -23,7 +23,7 @@ def test_parse_command_line_options(mocksql):
   sql.add_command_line_options(parser)
   parser.parse_args([
     '--db-host', mock.sentinel.host,
-    '--db-port', mock.sentinel.port,
+    '--db-port', '1234',
     '--db-user', mock.sentinel.user,
     '--db-pass', mock.sentinel.password,
     '--db-name', mock.sentinel.database])
@@ -33,7 +33,7 @@ def test_parse_command_line_options(mocksql):
   assert mocksql.connect.called == 1
   args, kwargs = mocksql.connect.call_args
   assert kwargs['host'] == mock.sentinel.host
-  assert kwargs['port'] == mock.sentinel.port
+  assert kwargs['port'] == 1234
   assert kwargs['user'] == mock.sentinel.user
   assert kwargs['passwd'] == mock.sentinel.password
   assert kwargs['db'] == mock.sentinel.database

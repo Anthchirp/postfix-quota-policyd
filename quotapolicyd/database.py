@@ -1,11 +1,13 @@
 import MySQLdb
+import MySQLdb.cursors
+import threading
 
 class db_link():
   def __init__(self):
     # Set some sensible defaults
     self.defaults = {
       '--db-host': '127.0.0.1',
-      '--db-port': '3306',
+      '--db-port': 3306,
       '--db-user': 'quotapolicyd',
       '--db-pass': 'quotapolicyd',
       '--db-name': 'quotapolicyd'
@@ -77,7 +79,7 @@ class db_link():
     optparser.add_option('--db-port', metavar='PORT',
       default=self.defaults.get('--db-port', None),
       help='MySQL host port, default %default',
-      type='string', nargs=1,
+      type='int', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-user', metavar='USER',
       default=self.defaults.get('--db-user', None),
