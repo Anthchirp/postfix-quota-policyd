@@ -18,33 +18,49 @@ class db_link():
     self._connected = False
     self._db = None
 
+    # single-threaded database access
+    self._lock = threading.Lock()
+
   def connect(self):
-    if self._connected: return
-    self._db = MySQLdb.connect(
-      host = self.config.get('--db-host', self.defaults.get('--db-host', None)),
-      port = self.config.get('--db-port', self.defaults.get('--db-port', None)),
-      user = self.config.get('--db-user', self.defaults.get('--db-user', None)),
-      passwd = self.config.get('--db-pass', self.defaults.get('--db-pass', None)),
-      db = self.config.get('--db-name', self.defaults.get('--db-name', None)),
-      read_default_file = self.config.get('--db-conf', self.defaults.get('--db-conf', None))
-    )
-    self._connected = True
+    with self._lock:
+      if self._connected: return
+      kwargs = { 'cursorclass': MySQLdb.cursors.DictCursor }
+      kwargs = {}
+      for kw, val in [('host', '--db-host'),
+                      ('port', '--db-port'),
+                      ('user', '--db-user'),
+                      ('passwd', '--db-pass'),
+                      ('db', '--db-name'),
+                      ('read_default_file', '--db-conf')]:
+        set_value = self.config.get(val, self.defaults.get(val, None))
+        if set_value is not None:
+          kwargs[kw] = set_value
+      self._db = MySQLdb.connect(**kwargs)
+      self._db.raise_on_warnings = True
+      self._connected = True
 
   def is_connected(self):
     return self._connected
 
 
   def get_user_info(self, username):
-    '''SELECT username,
-       smtplogin.username IS NULL AS unseen,
-       smtplogin.locked,
-       smtplogin.password != auth.password AS reset,
-       smtplogin.authcount,
-       smtplogin.limit,
-       smtplogin.dynlimit,
-       smtplogin.lastseen
-  FROM auth LEFT OUTER JOIN smtplogin USING (username, source) WHERE username='$username'");'''
-    return { 'username': username }
+    self.connect()
+    with self._lock:
+      c=self._db.cursor()
+      c.execute("""SELECT username,
+        smtplogin.username IS NULL AS unseen,
+        smtplogin.locked,
+        smtplogin.password != auth.password AS reset,
+        smtplogin.authcount,
+        smtplogin.limit,
+        smtplogin.dynlimit,
+        smtplogin.lastseen
+        FROM auth
+        LEFT OUTER JOIN smtplogin USING (username, source)
+        WHERE username=%s""", (username,))
+      result = c.fetchone()
+      c.close()
+      return result
 
   def create_user(self, username):
     '''INSERT INTO smtplogin (username, source, password, authcount, lastseen) SELECT username, source, password, 1, NOW() FROM auth WHERE username = '$username' '''

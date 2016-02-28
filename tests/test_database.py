@@ -55,15 +55,24 @@ def test_check_config_file_behaviour(mocksql):
   assert kwargs['read_default_file'] == mock.sentinel.config
   assert kwargs['user'] == mock.sentinel.user
   for undefined in ['host', 'port', 'passwd', 'db']:
-    assert (undefined not in kwargs) or (kwargs[undefined] is None)
+    assert undefined not in kwargs
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_retrieve_user_information(mocksql):
-  sql = db_link()
-  sql.connect()
+  mocksql.connect().cursor().fetchone.return_value = mock.sentinel.dbresults
 
+  sql = db_link()
   user_info = sql.get_user_info(mock.sentinel.user)
-  assert user_info['username'] == mock.sentinel.user
+
+  assert mocksql.connect.called == 1
+  assert sql.is_connected()
+
+  assert mocksql.connect().cursor().execute.called == 1
+  args, kwargs = mocksql.connect().cursor().execute.call_args
+  assert args[1] == (mock.sentinel.user,)
+  assert args[0].startswith("SELECT")
+  assert mocksql.connect().cursor().close.called == 1
+  assert user_info == mock.sentinel.dbresults 
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_create_user(mocksql):
