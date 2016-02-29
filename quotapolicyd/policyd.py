@@ -2,9 +2,9 @@ import database
 from optparse import OptionParser, SUPPRESS_HELP
 import sys
 
-class policyd():
+class Policyd():
   def __init__(self):
-    self.sql = database.db_link()
+    self.sql = database.DBLink()
 
   def run(self):
     parser = OptionParser()
@@ -16,4 +16,4 @@ class policyd():
     opts, args = parser.parse_args()
 
 if __name__ == "__main__":
-  policyd().run()
+  Policyd().run()

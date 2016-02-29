@@ -2,7 +2,7 @@ import MySQLdb
 import MySQLdb.cursors
 import threading
 
-class db_link():
+class DBLink():
   def __init__(self):
     # Set some sensible defaults
     self.defaults = {

@@ -1,12 +1,12 @@
 import mock
 import optparse
 
-from quotapolicyd.database import db_link
+from quotapolicyd.database import DBLink
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_instantiate_link_and_connect_to_database(mocksql):
   mocksql.connect.return_value = mock.sentinel.dblink
-  sql = db_link()
+  sql = DBLink()
   assert not sql.is_connected()
 
   sql.connect()
@@ -19,7 +19,7 @@ def test_instantiate_link_and_connect_to_database(mocksql):
 def test_parse_command_line_options(mocksql):
   parser = optparse.OptionParser()
 
-  sql = db_link()
+  sql = DBLink()
   sql.add_command_line_options(parser)
   parser.parse_args([
     '--db-host', mock.sentinel.host,
@@ -42,7 +42,7 @@ def test_parse_command_line_options(mocksql):
 def test_add_command_line_help(mocksql):
   parser = mock.MagicMock()
 
-  db_link().add_command_line_options(parser)
+  DBLink().add_command_line_options(parser)
 
   assert parser.add_option.called
   assert parser.add_option.call_count > 4
@@ -53,7 +53,7 @@ def test_add_command_line_help(mocksql):
 def test_check_config_file_behaviour(mocksql):
   parser = optparse.OptionParser()
 
-  sql = db_link()
+  sql = DBLink()
   sql.add_command_line_options(parser)
   parser.parse_args([
     '--db-conf', mock.sentinel.config,
@@ -74,7 +74,7 @@ def test_retrieve_user_information(mocksql):
     cursor.return_value. \
     fetchone.return_value = mock.sentinel.dbresults
 
-  sql = db_link()
+  sql = DBLink()
   user_info = sql.get_user_info(mock.sentinel.user)
 
   assert mocksql.connect.call_count == 1
@@ -89,7 +89,7 @@ def test_retrieve_user_information(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_create_user(mocksql):
-  sql = db_link()
+  sql = DBLink()
   sql.connect()
 
   retval = sql.create_user(mock.sentinel.user)
@@ -97,7 +97,7 @@ def test_create_user(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter(mocksql):
-  sql = db_link()
+  sql = DBLink()
   sql.connect()
 
   retval = sql.increment_user(mock.sentinel.user)
@@ -105,7 +105,7 @@ def test_increment_user_counter(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter_and_lock(mocksql):
-  sql = db_link()
+  sql = DBLink()
   sql.connect()
 
   retval = sql.increment_lock_user(mock.sentinel.user)
@@ -113,7 +113,7 @@ def test_increment_user_counter_and_lock(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_unlock_user(mocksql):
-  sql = db_link()
+  sql = DBLink()
   sql.connect()
 
   retval = sql.unlock_user(mock.sentinel.user)
