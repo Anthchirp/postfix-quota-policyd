@@ -31,7 +31,7 @@ class DBLink():
                       ('passwd', '--db-pass'),
                       ('db', '--db-name'),
                       ('read_default_file', '--db-conf')]:
-        set_value = self.config.get(val, self.defaults.get(val, None))
+        set_value = self.config.get(val, self.defaults.get(val))
         if set_value is not None:
           kwargs[kw] = set_value
       self._db = MySQLdb.connect(**kwargs)
@@ -87,32 +87,32 @@ class DBLink():
   def add_command_line_options(self, optparser):
     '''function to inject command line parameters'''
     optparser.add_option('--db-host', metavar='HOST',
-      default=self.defaults.get('--db-host', None),
+      default=self.defaults.get('--db-host'),
       help='MySQL host address, default %default',
       type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-port', metavar='PORT',
-      default=self.defaults.get('--db-port', None),
+      default=self.defaults.get('--db-port'),
       help='MySQL host port, default %default',
       type='int', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-user', metavar='USER',
-      default=self.defaults.get('--db-user', None),
+      default=self.defaults.get('--db-user'),
       help='MySQL user, default %default',
       type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-pass', metavar='PASS',
-      default=self.defaults.get('--db-pass', None),
+      default=self.defaults.get('--db-pass'),
       help='MySQL password, default %default',
       type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-name', metavar='DB',
-      default=self.defaults.get('--db-name', None),
+      default=self.defaults.get('--db-name'),
       help='MySQL database name, default %default',
       type='string', nargs=1,
       action='callback', callback=self._set_parameter)
     optparser.add_option('--db-conf', metavar='CNF',
-      default=self.defaults.get('--db-conf', None),
+      default=self.defaults.get('--db-conf'),
       help='MySQL configuration file containing connection information, disables MySQL default values',
       type='string', nargs=1,
       action='callback', callback=self._set_parameter)
