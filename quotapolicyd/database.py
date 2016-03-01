@@ -143,6 +143,7 @@ class DBLink():
 
   def _set_parameter(self, option, opt, value, parser):
     '''callback function for optionparser'''
+    del option, parser # unused
     self.config[opt] = value
     if opt == '--db-conf':
       self.defaults = {}

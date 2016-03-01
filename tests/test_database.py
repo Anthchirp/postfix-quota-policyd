@@ -42,8 +42,7 @@ def test_parse_command_line_options(mocksql):
   assert kwargs['passwd'] == mock.sentinel.password
   assert kwargs['db'] == mock.sentinel.database
 
-@mock.patch('quotapolicyd.database.MySQLdb')
-def test_add_command_line_help(mocksql):
+def test_add_command_line_help():
   parser = mock.MagicMock()
 
   DBLink().add_command_line_options(parser)
@@ -104,7 +103,7 @@ def test_retrieve_user_information_error_handling(mocksql):
   assert mocksql.connect.call_count == 1
   assert mocksql.connect().cursor().execute.call_count == 1
   assert mocksql.connect().cursor().close.call_count == 1
-  assert user_info == None
+  assert user_info is None
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_create_user(mocksql):
