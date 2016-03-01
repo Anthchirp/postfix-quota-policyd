@@ -1,6 +1,6 @@
+import MySQLdb
 import mock
 import optparse
-
 from quotapolicyd.database import DBLink
 
 @mock.patch('quotapolicyd.database.MySQLdb')
@@ -12,7 +12,11 @@ def test_instantiate_link_and_connect_to_database(mocksql):
   sql.connect()
 
   assert mocksql.connect.call_count == 1
-  assert sql._db == mock.sentinel.dblink
+  assert sql.is_connected()
+
+  sql.connect()
+
+  assert mocksql.connect.call_count == 1
   assert sql.is_connected()
 
 @mock.patch('quotapolicyd.database.MySQLdb')
@@ -77,44 +81,152 @@ def test_retrieve_user_information(mocksql):
   sql = DBLink()
   user_info = sql.get_user_info(mock.sentinel.user)
 
-  assert mocksql.connect.call_count == 1
   assert sql.is_connected()
-
+  assert mocksql.connect.call_count == 1
   assert mocksql.connect().cursor().execute.call_count == 1
   args, kwargs = mocksql.connect().cursor().execute.call_args
   assert args[1] == (mock.sentinel.user,)
   assert args[0].startswith("SELECT")
+  assert ';' not in args[0]
   assert mocksql.connect().cursor().close.call_count == 1
-  assert user_info == mock.sentinel.dbresults 
+  assert user_info == mock.sentinel.dbresults
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_retrieve_user_information_error_handling(mocksql):
+  mocksql.connect.return_value.cursor.return_value. \
+    execute.side_effect = MySQLdb.Error()
+  mocksql.MySQLError = MySQLdb.MySQLError
+
+  sql = DBLink()
+  user_info = sql.get_user_info(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
+  assert user_info == None
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_create_user(mocksql):
   sql = DBLink()
-  sql.connect()
-
   retval = sql.create_user(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  args, kwargs = mocksql.connect().cursor().execute.call_args
+  assert args[1] == (mock.sentinel.user,)
+  assert args[0].startswith("INSERT INTO")
+  assert ';' not in args[0]
+  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
   assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_create_user_error_handling(mocksql):
+  mocksql.connect.return_value.cursor.return_value. \
+    execute.side_effect = MySQLdb.Error()
+  mocksql.MySQLError = MySQLdb.MySQLError
+
+  sql = DBLink()
+  retval = sql.create_user(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
+  assert not retval
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter(mocksql):
   sql = DBLink()
-  sql.connect()
-
   retval = sql.increment_user(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  args, kwargs = mocksql.connect().cursor().execute.call_args
+  assert args[1] == (mock.sentinel.user,)
+  assert args[0].startswith("UPDATE")
+  assert ';' not in args[0]
+  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
   assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_increment_user_counter_error_handling(mocksql):
+  mocksql.connect.return_value.cursor.return_value. \
+    execute.side_effect = MySQLdb.Error()
+  mocksql.MySQLError = MySQLdb.MySQLError
+
+  sql = DBLink()
+  retval = sql.increment_user(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
+  assert not retval
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter_and_lock(mocksql):
   sql = DBLink()
-  sql.connect()
-
   retval = sql.increment_lock_user(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  args, kwargs = mocksql.connect().cursor().execute.call_args
+  assert args[1] == (mock.sentinel.user,)
+  assert args[0].startswith("UPDATE")
+  assert ';' not in args[0]
+  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
   assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_increment_user_counter_and_lock_error_handling(mocksql):
+  mocksql.connect.return_value.cursor.return_value. \
+    execute.side_effect = MySQLdb.Error()
+  mocksql.MySQLError = MySQLdb.MySQLError
+
+  sql = DBLink()
+  retval = sql.increment_lock_user(mock.sentinel.user)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
+  assert not retval
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_unlock_user(mocksql):
   sql = DBLink()
-  sql.connect()
+  retval = sql.unlock_user_increase_limit(mock.sentinel.user, mock.sentinel.limit)
 
-  retval = sql.unlock_user(mock.sentinel.user)
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  args, kwargs = mocksql.connect().cursor().execute.call_args
+  assert args[1] == (mock.sentinel.limit, mock.sentinel.user, mock.sentinel.user)
+  assert args[0].startswith("UPDATE")
+  assert ';' not in args[0]
+  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
   assert retval
+
+@mock.patch('quotapolicyd.database.MySQLdb')
+def test_unlock_user_error_handling(mocksql):
+  mocksql.connect.return_value.cursor.return_value. \
+    execute.side_effect = MySQLdb.Error()
+  mocksql.MySQLError = MySQLdb.MySQLError
+
+  sql = DBLink()
+  retval = sql.unlock_user_increase_limit(mock.sentinel.user, mock.sentinel.limit)
+
+  assert sql.is_connected()
+  assert mocksql.connect.call_count == 1
+  assert mocksql.connect().cursor().execute.call_count == 1
+  assert mocksql.connect().cursor().close.call_count == 1
+  assert not retval
+

@@ -45,38 +45,101 @@ class DBLink():
   def get_user_info(self, username):
     self.connect()
     with self._lock:
-      c=self._db.cursor()
-      c.execute("""SELECT username,
-        smtplogin.username IS NULL AS unseen,
-        smtplogin.locked,
-        smtplogin.password != auth.password AS reset,
-        smtplogin.authcount,
-        smtplogin.limit,
-        smtplogin.dynlimit,
-        smtplogin.lastseen
-        FROM auth
-        LEFT OUTER JOIN smtplogin USING (username, source)
-        WHERE username=%s""", (username,))
-      result = c.fetchone()
-      c.close()
-      return result
+      try:
+        c=self._db.cursor()
+        c.execute("""SELECT username,
+          smtplogin.username IS NULL AS unseen,
+          smtplogin.locked,
+          smtplogin.password != auth.password AS reset,
+          smtplogin.authcount,
+          smtplogin.limit,
+          smtplogin.dynlimit,
+          smtplogin.lastseen
+          FROM auth
+          LEFT OUTER JOIN smtplogin USING (username, source)
+          WHERE username=%s""", (username,))
+        result = c.fetchone()
+        return result
+      except MySQLdb.MySQLError, e:
+        # TODO: errors should be handled properly at some point
+        print e
+        return None
+      finally:
+        c.close()
 
   def create_user(self, username):
-    '''INSERT INTO smtplogin (username, source, password, authcount, lastseen) SELECT username, source, password, 1, NOW() FROM auth WHERE username = '$username' '''
-    return True
+    self.connect()
+    with self._lock:
+      try:
+        c=self._db.cursor()
+        c.execute("""INSERT INTO smtplogin
+          (username, source, password, authcount, lastseen)
+          SELECT username, source, password, 1, NOW()
+            FROM auth
+            WHERE username=%s""", (username,))
+        c.commit()
+        return True
+      except MySQLdb.MySQLError, e:
+        # TODO: errors should be handled properly at some point
+        print e
+        return False
+      finally:
+        c.close()
 
   def increment_user(self, username):
-    '''UPDATE smtplogin SET authcount = authcount + 1, lastseen = NOW() WHERE username='$username' '''
-    return True
+    self.connect()
+    with self._lock:
+      try:
+        c=self._db.cursor()
+        c.execute("""UPDATE smtplogin
+           SET authcount = authcount + 1, lastseen = NOW()
+           WHERE username=%s""", (username,))
+        c.commit()
+        return True
+      except MySQLdb.MySQLError, e:
+        # TODO: errors should be handled properly at some point
+        print e
+        return False
+      finally:
+        c.close()
 
   def increment_lock_user(self, username):
-    '''UPDATE smtplogin SET authcount = authcount + 1, lastseen = NOW(), locked = 'Y' WHERE username='$username' '''
-    return True
+    self.connect()
+    with self._lock:
+      try:
+        c=self._db.cursor()
+        c.execute("""UPDATE smtplogin
+           SET authcount = authcount + 1, lastseen = NOW(), locked = 'Y'
+           WHERE username=%s""", (username,))
+        c.commit()
+        return True
+      except MySQLdb.MySQLError, e:
+        # TODO: errors should be handled properly at some point
+        print e
+        return False
+      finally:
+        c.close()
 
-  def unlock_user(self, username):
-    '''UPDATE smtplogin SET locked = 'N', dynlimit = $newlimit, password = (SELECT password FROM auth WHERE username='$username') WHERE username='$username' '''
-    return True
-
+  def unlock_user_increase_limit(self, username, newlimit):
+    self.connect()
+    with self._lock:
+      try:
+        c=self._db.cursor()
+        c.execute("""UPDATE smtplogin
+           SET locked = 'N', dynlimit = %s, password = (
+             SELECT password
+             FROM auth
+             WHERE username = %s
+           )
+           WHERE username=%s""", (newlimit, username, username))
+        c.commit()
+        return True
+      except MySQLdb.MySQLError, e:
+        # TODO: errors should be handled properly at some point
+        print e
+        return False
+      finally:
+        c.close()
 
   def _set_parameter(self, option, opt, value, parser):
     '''callback function for optionparser'''
