@@ -5,6 +5,6 @@ def pytest_addoption(parser):
 def pytest_generate_tests(metafunc):
   if 'dbconfig' in metafunc.fixturenames:
     if metafunc.config.option.live_database_config:
-      metafunc.parametrize('dbconfig', [metafunc.config.option.live_database_config])
+      metafunc.parametrize('dbconfig', metafunc.config.option.live_database_config)
     else:
       metafunc.parametrize('dbconfig', [])
