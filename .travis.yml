@@ -1,7 +1,11 @@
 language: python
+services:
+    - mysql
+before_script:
+    - mysql < contrib/database_setup.sql
 install:
     - pip install pytest pytest-cov mock coveralls mysqlclient
 script:
-    - py.test --cov=quotapolicyd
+    - py.test --cov=quotapolicyd --live-database-config=contrib/database_example.cfg
 after_success:
     - coveralls

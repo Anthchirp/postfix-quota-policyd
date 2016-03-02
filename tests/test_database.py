@@ -229,3 +229,6 @@ def test_unlock_user_error_handling(mocksql):
   assert mocksql.connect().cursor().close.call_count == 1
   assert not retval
 
+def test_using_live_database_do_stuff(dbconfig):
+  print "TEST:", dbconfig
+
