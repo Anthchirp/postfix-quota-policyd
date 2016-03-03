@@ -77,7 +77,7 @@ class DBLink():
           SELECT username, source, password, 1, NOW()
             FROM auth
             WHERE username=%s""", (username,))
-        c.commit()
+        self._db.commit()
         return True
       except MySQLdb.MySQLError, e:
         # TODO: errors should be handled properly at some point
@@ -94,7 +94,7 @@ class DBLink():
         c.execute("""UPDATE smtplogin
            SET authcount = authcount + 1, lastseen = NOW()
            WHERE username=%s""", (username,))
-        c.commit()
+        self._db.commit()
         return True
       except MySQLdb.MySQLError, e:
         # TODO: errors should be handled properly at some point
@@ -111,7 +111,7 @@ class DBLink():
         c.execute("""UPDATE smtplogin
            SET authcount = authcount + 1, lastseen = NOW(), locked = 'Y'
            WHERE username=%s""", (username,))
-        c.commit()
+        self._db.commit()
         return True
       except MySQLdb.MySQLError, e:
         # TODO: errors should be handled properly at some point
@@ -132,7 +132,7 @@ class DBLink():
              WHERE username = %s
            )
            WHERE username=%s""", (newlimit, username, username))
-        c.commit()
+        self._db.commit()
         return True
       except MySQLdb.MySQLError, e:
         # TODO: errors should be handled properly at some point

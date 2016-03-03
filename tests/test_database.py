@@ -117,7 +117,7 @@ def test_create_user(mocksql):
   assert args[1] == (mock.sentinel.user,)
   assert args[0].startswith("INSERT INTO")
   assert ';' not in args[0]
-  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().commit.call_count == 1
   assert mocksql.connect().cursor().close.call_count == 1
   assert retval
 
@@ -148,7 +148,7 @@ def test_increment_user_counter(mocksql):
   assert args[1] == (mock.sentinel.user,)
   assert args[0].startswith("UPDATE")
   assert ';' not in args[0]
-  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().commit.call_count == 1
   assert mocksql.connect().cursor().close.call_count == 1
   assert retval
 
@@ -179,7 +179,7 @@ def test_increment_user_counter_and_lock(mocksql):
   assert args[1] == (mock.sentinel.user,)
   assert args[0].startswith("UPDATE")
   assert ';' not in args[0]
-  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().commit.call_count == 1
   assert mocksql.connect().cursor().close.call_count == 1
   assert retval
 
@@ -210,7 +210,7 @@ def test_unlock_user(mocksql):
   assert args[1] == (mock.sentinel.limit, mock.sentinel.user, mock.sentinel.user)
   assert args[0].startswith("UPDATE")
   assert ';' not in args[0]
-  assert mocksql.connect().cursor().commit.call_count == 1
+  assert mocksql.connect().commit.call_count == 1
   assert mocksql.connect().cursor().close.call_count == 1
   assert retval
 
