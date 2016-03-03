@@ -14,8 +14,9 @@ CREATE TABLE IF NOT EXISTS `auth` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*!40000 ALTER TABLE `auth` DISABLE KEYS */;
-INSERT IGNORE INTO `auth` (`username`, `password`, `source`) VALUES
-	('user', '$pass', 'pytest');
+REPLACE INTO `auth` (`username`, `password`, `source`) VALUES
+	('pytest_dummy_user_1', '$1$somepass', 'pytest'),
+	('pytest_dummy_user_2', '$1$somepass', 'pytest');
 /*!40000 ALTER TABLE `auth` ENABLE KEYS */;
 
 CREATE TABLE IF NOT EXISTS `smtplogin` (
@@ -31,8 +32,9 @@ CREATE TABLE IF NOT EXISTS `smtplogin` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 
 /*!40000 ALTER TABLE `smtplogin` DISABLE KEYS */;
-INSERT IGNORE INTO `smtplogin` (`username`, `source`, `locked`, `password`, `authcount`, `limit`, `dynlimit`, `lastseen`) VALUES
-	('user', 'pytest', 'N', '$pass', 0, 100, 100, '2016-03-02 21:34:08');
+REPLACE INTO `smtplogin` (`username`, `source`, `locked`, `password`, `authcount`, `limit`, `dynlimit`, `lastseen`) VALUES
+	('pytest_dummy_user_1', 'pytest', 'N', '$1$differentpass', 0, 3, 3, '2016-03-02 21:34:08');
+DELETE FROM `smtplogin` WHERE `username` = 'pytest_dummy_user_2' AND `source`= 'pytest';
 /*!40000 ALTER TABLE `smtplogin` ENABLE KEYS */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
 /*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;

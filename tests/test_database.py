@@ -229,7 +229,14 @@ def test_unlock_user_error_handling(mocksql):
   assert mocksql.connect().cursor().close.call_count == 1
   assert not retval
 
+#
+# To run the tests below you need to pass a MySQL configuration file to py.test
+# with the  --live-database-config=...  command line parameter. Note that this
+# will modify an existing database, so do not use on production systems!
+#
+
 def test_using_live_database_connect(dbconfig):
+  import datetime
   parser = optparse.OptionParser()
 
   sql = DBLink()
@@ -237,3 +244,32 @@ def test_using_live_database_connect(dbconfig):
   parser.parse_args(['--db-conf', dbconfig])
 
   sql.connect()
+
+  non_existent_user = sql.get_user_info('pytest_dummy_user_nonext')
+  assert non_existent_user is None
+
+  user1_name = 'pytest_dummy_user_1'
+  user1 = sql.get_user_info(user1_name)
+  assert user1 == {'authcount': 0L, 'dynlimit': 3L, 'lastseen': datetime.datetime(2016, 3, 2, 21, 34, 8), 'limit': 3L, 'username': user1_name, 'reset': 1L, 'unseen': 0L, 'locked': 'N'}
+
+  user2_name = 'pytest_dummy_user_2'
+  user2 = sql.get_user_info(user2_name)
+  assert user2 == {'authcount': None, 'dynlimit': None, 'lastseen': None, 'limit': None, 'username': user2_name, 'reset': None, 'unseen': 1L, 'locked': None}
+
+  sql.create_user(user2_name)
+  user2 = sql.get_user_info(user2_name)
+  assert user2['lastseen'] is not None
+  user2_lastseen = user2['lastseen']
+  del user2['lastseen']
+  assert user2 == {'authcount': 1L, 'dynlimit': 100L, 'limit': 100L, 'username': user2_name, 'reset': 0L, 'unseen': 0L, 'locked': 'N'}
+
+  sql.increment_user(user2_name)
+  user2 = sql.get_user_info(user2_name)
+  assert user2['lastseen'] is not None
+  assert user2['lastseen'] != user2_lastseen
+  del user2['lastseen']
+  assert user2 == {'authcount': 2L, 'dynlimit': 100L, 'limit': 100L, 'username': user2_name, 'reset': 0L, 'unseen': 0L, 'locked': 'N'}
+
+#  def increment_user(self, username):
+#  def increment_lock_user(self, username):
+#  def unlock_user_increase_limit(self, username, newlimit):
