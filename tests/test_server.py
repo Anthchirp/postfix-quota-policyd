@@ -8,8 +8,9 @@ def test_start_server():
 
   with Server(callback=callback) as srv:
     srv.listen()
+    server_reference = srv
     time.sleep(0.3)
 
-  assert Server.opened
-  assert Server.closed
+  assert server_reference.opened
+  assert server_reference.closed
 
