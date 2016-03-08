@@ -3,35 +3,36 @@ from quotapolicyd.log import Logger
 
 @mock.patch('quotapolicyd.log.syslog')
 def test_write_to_syslog(sysmock):
-  log = Logger()
+  sysmock.LOG_PID = mock.sentinel.PID
+  sysmock.LOG_MAIL = mock.sentinel.MAIL
+  sysmock.LOG_INFO = mock.sentinel.INFO
+  sysmock.LOG_WARNING = mock.sentinel.WARN
+  sysmock.LOG_DEBUG = mock.sentinel.DEBUG
 
   messages = { lvl: '%smessage' % lvl
       for lvl in ['debug', 'warn', 'info'] }
 
+  log = Logger()
   log.info(messages['info'])
-  log.warn(messages['warn'])
-  log.debug(messages['debug'])
+  assert sysmock.syslog.call_count == 1
+  assert sysmock.syslog.call_args == ((mock.sentinel.INFO, mock.ANY), {})
+  assert messages['info'] in sysmock.syslog.call_args[0][1]
 
-  del log
+  log.warn(messages['warn'])
+  assert sysmock.syslog.call_count == 2
+  assert sysmock.syslog.call_args == ((mock.sentinel.WARN, mock.ANY), {})
+  assert messages['warn'] in sysmock.syslog.call_args[0][1]
+
+  log.debug(messages['debug'])
+  assert sysmock.syslog.call_count == 3
+  assert sysmock.syslog.call_args == ((mock.sentinel.DEBUG, mock.ANY), {})
+  assert messages['debug'] in sysmock.syslog.call_args[0][1]
 
   assert sysmock.openlog.call_count == 1
-  assert sysmock.syslog.call_count == 3
-
-  try:
-    import gc
-    gc.collect()
-    assert sysmock.closelog.call_count == 1
-  except ImportError:
-    print "Garbage collection test skipped"
-#
-#import syslog
-#
-#syslog.syslog('Processing started')
-#if error:
-#    syslog.syslog(syslog.LOG_ERR, 'Processing started')
-#
-#An example of setting some log options, these would include the process ID in logged messages, and write the messages to the destination facility used for mail logging:
-#
-#s#yslog.openlog(logoption=syslog.LOG_PID, facility=syslog.LOG_MAIL)
-#sy#slog.syslog('E-mail processing initiated...')
-#
+  args, kwargs = sysmock.openlog.call_args
+  assert args == ()
+  assert kwargs == {
+      'ident': 'quotapolicyd',
+      'facility': mock.sentinel.MAIL,
+      'logoption': mock.sentinel.PID
+    }
