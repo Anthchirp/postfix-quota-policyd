@@ -8,11 +8,22 @@ class Logger():
       facility=syslog.LOG_MAIL
     )
 
+    self.WARN = 0
+    self.INFO = 1
+    self.DEBUG = 2
+    self._level = self.INFO
+
+  def set_log_level(self, level):
+    self._level = level
+
   def info(self, message):
-    syslog.syslog(syslog.LOG_INFO, message)
+    if self._level >= self.INFO:
+      syslog.syslog(syslog.LOG_INFO, message)
 
   def warn(self, message):
-    syslog.syslog(syslog.LOG_WARNING, message)
+    if self._level >= self.WARN:
+      syslog.syslog(syslog.LOG_WARNING, message)
 
   def debug(self, message):
-    syslog.syslog(syslog.LOG_DEBUG, message)
+    if self._level >= self.DEBUG:
+      syslog.syslog(syslog.LOG_DEBUG, message)

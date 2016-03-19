@@ -13,6 +13,7 @@ def test_write_to_syslog(sysmock):
       for lvl in ['debug', 'warn', 'info'] }
 
   log = Logger()
+  log.set_log_level(log.DEBUG)
   log.info(messages['info'])
   assert sysmock.syslog.call_count == 1
   assert sysmock.syslog.call_args == ((mock.sentinel.INFO, mock.ANY), {})
@@ -36,3 +37,31 @@ def test_write_to_syslog(sysmock):
       'facility': mock.sentinel.MAIL,
       'logoption': mock.sentinel.PID
     }
+
+@mock.patch('quotapolicyd.log.syslog')
+def test_syslog_log_levels(sysmock):
+  log = Logger()
+
+  # implied default level: log.INFO
+  log.debug('')
+  log.info('')
+  log.warn('')
+  assert sysmock.syslog.call_count == 2
+
+  log.set_log_level(log.DEBUG)
+  log.debug('')
+  log.info('')
+  log.warn('')
+  assert sysmock.syslog.call_count == 2 + 3
+
+  log.set_log_level(log.INFO)
+  log.debug('')
+  log.info('')
+  log.warn('')
+  assert sysmock.syslog.call_count == 2 + 3 + 2
+
+  log.set_log_level(log.WARN)
+  log.debug('')
+  log.info('')
+  log.warn('')
+  assert sysmock.syslog.call_count == 2 + 3 + 2 + 1
