@@ -10,10 +10,8 @@ class Policyd():
 
   def run(self):
     parser = OptionParser()
-    #parser.add_option("-v", action="store_true", dest="verbose",
-    #                  help="be moderately verbose")
     parser.add_option("-?", help=SUPPRESS_HELP, action="help")
-
+    self.log.add_command_line_options(parser)
     self.sql.add_command_line_options(parser)
     opts, args = parser.parse_args()
 

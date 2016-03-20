@@ -3,10 +3,12 @@ import quotapolicyd.policyd
 
 @mock.patch('quotapolicyd.policyd.OptionParser')
 @mock.patch('quotapolicyd.policyd.database')
-def test_aggregate_command_line_help(database, optparse):
+@mock.patch('quotapolicyd.policyd.log')
+def test_aggregate_command_line_help(log, database, optparse):
   optparse().parse_args.return_value = ([], [])
 
   quotapolicyd.policyd.Policyd().run()
 
-  assert database.db_link().add_command_line_options.called_once_with(optparse())
+  database.DBLink().add_command_line_options.assert_called_once_with(optparse())
+  log.Logger().add_command_line_options.assert_called_once_with(optparse())
   assert optparse().add_option.called > 0
