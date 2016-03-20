@@ -14,6 +14,7 @@ class Logger():
     self._level = self.INFO
 
   def set_log_level(self, level):
+    '''Set a defined logging level and filter all messages below the threshold.'''
     self._level = level
 
   def info(self, message):

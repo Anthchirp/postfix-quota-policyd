@@ -4,6 +4,7 @@ from quotapolicyd.log import Logger
 
 @mock.patch('quotapolicyd.log.syslog')
 def test_parse_command_line_options(sysmock):
+  '''Adding '-v' to command line should enable debug logging.'''
   parser = optparse.OptionParser()
 
   log = Logger()
@@ -17,6 +18,7 @@ def test_parse_command_line_options(sysmock):
 
 @mock.patch('quotapolicyd.log.syslog')
 def test_write_to_syslog(sysmock):
+  '''Check that messages are passed on to syslog with appropriate flags set.'''
   sysmock.LOG_PID = mock.sentinel.PID
   sysmock.LOG_MAIL = mock.sentinel.MAIL
   sysmock.LOG_INFO = mock.sentinel.INFO
@@ -54,6 +56,7 @@ def test_write_to_syslog(sysmock):
 
 @mock.patch('quotapolicyd.log.syslog')
 def test_syslog_log_levels(sysmock):
+  '''Check log levels and filters.'''
   log = Logger()
 
   # implied default level: log.INFO

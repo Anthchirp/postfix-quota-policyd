@@ -5,6 +5,7 @@ from quotapolicyd.database import DBLink
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_instantiate_link_and_connect_to_database(mocksql):
+  '''Test the SQL connection routine.'''
   mocksql.connect.return_value = mock.sentinel.dblink
   sql = DBLink()
   assert not sql.is_connected()
@@ -21,6 +22,7 @@ def test_instantiate_link_and_connect_to_database(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_parse_command_line_options(mocksql):
+  '''Check that command line parameters are passed on appropriately.'''
   parser = optparse.OptionParser()
 
   sql = DBLink()
@@ -43,6 +45,7 @@ def test_parse_command_line_options(mocksql):
   assert kwargs['db'] == mock.sentinel.database
 
 def test_add_command_line_help():
+  '''Check that command line parameters are registered in the parser.'''
   parser = mock.MagicMock()
 
   DBLink().add_command_line_options(parser)
@@ -54,6 +57,7 @@ def test_add_command_line_help():
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_check_config_file_behaviour(mocksql):
+  '''Check that default parameters are not active when configuration file is used.'''
   parser = optparse.OptionParser()
 
   sql = DBLink()
@@ -73,6 +77,7 @@ def test_check_config_file_behaviour(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_retrieve_user_information(mocksql):
+  '''Test the function to retrieve information from the database.'''
   mocksql.connect.return_value. \
     cursor.return_value. \
     fetchone.return_value = mock.sentinel.dbresults
@@ -92,6 +97,7 @@ def test_retrieve_user_information(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_retrieve_user_information_error_handling(mocksql):
+  '''Test error handling in the function to retrieve information from the database.'''
   mocksql.connect.return_value.cursor.return_value. \
     execute.side_effect = MySQLdb.Error()
   mocksql.MySQLError = MySQLdb.MySQLError
@@ -107,6 +113,7 @@ def test_retrieve_user_information_error_handling(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_create_user(mocksql):
+  '''Test creating a user in the database.'''
   sql = DBLink()
   retval = sql.create_user(mock.sentinel.user)
 
@@ -123,6 +130,7 @@ def test_create_user(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_create_user_error_handling(mocksql):
+  '''Test error handling on creating a user in the database.'''
   mocksql.connect.return_value.cursor.return_value. \
     execute.side_effect = MySQLdb.Error()
   mocksql.MySQLError = MySQLdb.MySQLError
@@ -138,6 +146,7 @@ def test_create_user_error_handling(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter(mocksql):
+  '''Test incrementing the counter of a user.'''
   sql = DBLink()
   retval = sql.increment_user(mock.sentinel.user)
 
@@ -154,6 +163,7 @@ def test_increment_user_counter(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter_error_handling(mocksql):
+  '''Test error handling on incrementing the counter of a user.'''
   mocksql.connect.return_value.cursor.return_value. \
     execute.side_effect = MySQLdb.Error()
   mocksql.MySQLError = MySQLdb.MySQLError
@@ -169,6 +179,7 @@ def test_increment_user_counter_error_handling(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter_and_lock(mocksql):
+  '''Test incrementing the counter of a user and locking the account.'''
   sql = DBLink()
   retval = sql.increment_lock_user(mock.sentinel.user)
 
@@ -185,6 +196,7 @@ def test_increment_user_counter_and_lock(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_increment_user_counter_and_lock_error_handling(mocksql):
+  '''Test error handling on incrementing the counter of a user and locking the account.'''
   mocksql.connect.return_value.cursor.return_value. \
     execute.side_effect = MySQLdb.Error()
   mocksql.MySQLError = MySQLdb.MySQLError
@@ -200,6 +212,7 @@ def test_increment_user_counter_and_lock_error_handling(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_unlock_user(mocksql):
+  '''Test unlocking a user.'''
   sql = DBLink()
   retval = sql.unlock_user_increase_limit(mock.sentinel.user, mock.sentinel.limit)
 
@@ -216,6 +229,7 @@ def test_unlock_user(mocksql):
 
 @mock.patch('quotapolicyd.database.MySQLdb')
 def test_unlock_user_error_handling(mocksql):
+  '''Test error handling on unlocking a user.'''
   mocksql.connect.return_value.cursor.return_value. \
     execute.side_effect = MySQLdb.Error()
   mocksql.MySQLError = MySQLdb.MySQLError
@@ -236,6 +250,7 @@ def test_unlock_user_error_handling(mocksql):
 #
 
 def test_using_live_database_connect(dbconfig):
+  '''Run tests on a live database.'''
   import datetime
   parser = optparse.OptionParser()
 
