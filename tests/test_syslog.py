@@ -1,5 +1,19 @@
 import mock
+import optparse
 from quotapolicyd.log import Logger
+
+@mock.patch('quotapolicyd.log.syslog')
+def test_parse_command_line_options(sysmock):
+  parser = optparse.OptionParser()
+
+  log = Logger()
+  log.debug('')
+  assert not sysmock.syslog.called
+
+  log.add_command_line_options(parser)
+  parser.parse_args(['-v'])
+  log.debug('')
+  assert sysmock.syslog.called
 
 @mock.patch('quotapolicyd.log.syslog')
 def test_write_to_syslog(sysmock):
@@ -9,7 +23,7 @@ def test_write_to_syslog(sysmock):
   sysmock.LOG_WARNING = mock.sentinel.WARN
   sysmock.LOG_DEBUG = mock.sentinel.DEBUG
 
-  messages = { lvl: '%smessage' % lvl
+  messages = { lvl: '{0}message'.format(lvl)
       for lvl in ['debug', 'warn', 'info'] }
 
   log = Logger()
